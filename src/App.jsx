@@ -84,7 +84,7 @@ const App = () => {
     <div className='App'>
       <div className='container'>
         <section className='first-section'>
-          <div className='img-container'><img src="./android-launchericon-512-512.png" alt="cloud forecast" height="450px" width="450px"/></div>
+          <div className='img-container'><img src="./android-launchericon-512-512.png" alt="cloud forecast" height="400px" width="400px"/></div>
           <div className='weather-container'>
             <div className='search-bar'>
               <input onChange={(e)=> setSearch(e.target.value)} value={search} type="text" name="search" placeholder='Search...'/>
