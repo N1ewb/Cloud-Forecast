@@ -7,7 +7,8 @@ import WindIcon from './images/icons8-wind-50.png'
 import HumidityIcon from './images/icons8-humidity-32.png'
 import PressureIcon from './images/icons8-uneven-surface-64.png'
 import WeatherList from './components/WeatherList';
-
+import LaucherIcon from './images/android-launchericon-512-512.png'
+import CloudBg from './images/cloudy-bg.jpg'
 
 const API_URL =`https://api.open-meteo.com/v1/forecast?`
 const ACESS_KEY = "pk.81e491f248aa4dbd5ed6d092ba5ccca8"
@@ -28,9 +29,9 @@ const App = () => {
         setLatitude(position.coords.latitude)
         setLongitude(position.coords.longitude)
       })
-      const response = await axios.get(`https://us1.locationiq.com/v1/search?key=${ACESS_KEY}&q=${address}&format=json`)
+      const response = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${address}+iligan&limit=1`)
       const currentLocation = response.data
-      const filteredLocations = currentLocation.find(loc => loc.type === "administrative" || loc.type === "quarter");
+      const filteredLocations = currentLocation.find(loc => loc.addresstype === "administrative" || loc.addresstype === "quarter");
       setLocation(filteredLocations)
     }catch{  
       console.log(error)
@@ -83,8 +84,8 @@ const App = () => {
     
     <div className='App'>
       <div className='container'>
-        <section className='first-section'>
-          <div className='img-container'><img src="./android-launchericon-512-512.png" alt="cloud forecast" height="380px" width="380px"/></div>
+        <section className='first-section' style={{backgroundImage:`url(${CloudBg})`}}>
+          <div className='img-container'><img src={LaucherIcon} alt="cloud forecast" height="380px" width="380px"/></div>
           <div className='weather-container'>
             <div className='search-bar'>
               <input onChange={(e)=> setSearch(e.target.value)} value={search} type="text" name="search" placeholder='Search...'/>
@@ -92,7 +93,7 @@ const App = () => {
             </div>
               {location && location.display_name ? (
               <>
-                <h1>{location.display_name}</h1>
+                <h1>{location.name}</h1>
                 <img className="locaion-icon" src={LocationIcon} alt="location-icon" height="15px" width="15px"/>
                 <p className='temperature'>{main.temperature_2m}°C</p>
               </>
