@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import addNotification from 'react-push-notification';
+
+import vmo from './vmo.json'
 import axios from 'axios';
+
 import './App.css'
+
 import LocationIcon from './images/icons8-location-50.png'
 import TempIcon from './images/icons8-temperature-32.png'
 import WindIcon from './images/icons8-wind-50.png'
@@ -9,6 +14,7 @@ import PressureIcon from './images/icons8-uneven-surface-64.png'
 import WeatherList from './components/WeatherList';
 import LaucherIcon from './images/android-launchericon-512-512.png'
 import CloudBg from './images/cloudy-bg.jpg'
+import Rain from './images/icons8-rain-48.png'
 
 const API_URL =`https://api.open-meteo.com/v1/forecast?`
 const ACESS_KEY = "pk.81e491f248aa4dbd5ed6d092ba5ccca8"
@@ -22,6 +28,8 @@ const App = () => {
   const [hourly, setHourly] = useState(null)
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [weatherType, setWeatherType] = useState(0)
+  const [notificationFired, setNotificationFired] = useState(false);
 
   const fetchLocation = async (address) => { 
     try {
@@ -42,12 +50,13 @@ const App = () => {
       try {
         let apiUrl;
         if (location && location.lon !== "undefined") {
-          apiUrl = `${API_URL}latitude=${location.lat}&longitude=${location.lon}&hourly=temperature_2m,rain&forecast_days=1&current=temperature_2m%2Crelative_humidity_2m%2Capparent_temperature%2Cis_day%2Cprecipitation%2Crain%2Cweather_code%2Ccloud_cover%2Cpressure_msl%2Csurface_pressure%2Cwind_speed_10m%2Cwind_direction_10m%2Cwind_gusts_10m&fbclid=IwAR1elpkRSM76mWf6irPZzuAzQjr89XrzH51iQfYLABFyu8xAtL5fIT7Chis`;
+          apiUrl = `${API_URL}latitude=${location.lat}&longitude=${location.lon}&hourly=temperature_2m,rain,weather_code&forecast_days=1&current=temperature_2m%2Crelative_humidity_2m%2Capparent_temperature%2Cis_day%2Cprecipitation%2Crain%2Cweather_code%2Ccloud_cover%2Cpressure_msl%2Csurface_pressure%2Cwind_speed_10m%2Cwind_direction_10m%2Cwind_gusts_10m&fbclid=IwAR1elpkRSM76mWf6irPZzuAzQjr89XrzH51iQfYLABFyu8xAtL5fIT7Chis`;
         } else {
-          apiUrl = `${API_URL}latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,rain&forecast_days=1&current=temperature_2m%2Crelative_humidity_2m%2Capparent_temperature%2Cis_day%2Cprecipitation%2Crain%2Cweather_code%2Ccloud_cover%2Cpressure_msl%2Csurface_pressure%2Cwind_speed_10m%2Cwind_direction_10m%2Cwind_gusts_10m&fbclid=IwAR1elpkRSM76mWf6irPZzuAzQjr89XrzH51iQfYLABFyu8xAtL5fIT7Chis`;
+          apiUrl = `${API_URL}latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,rain,weather_code&forecast_days=1&current=temperature_2m%2Crelative_humidity_2m%2Capparent_temperature%2Cis_day%2Cprecipitation%2Crain%2Cweather_code%2Ccloud_cover%2Cpressure_msl%2Csurface_pressure%2Cwind_speed_10m%2Cwind_direction_10m%2Cwind_gusts_10m&fbclid=IwAR1elpkRSM76mWf6irPZzuAzQjr89XrzH51iQfYLABFyu8xAtL5fIT7Chis`;
         }
         const response = await axios.get(apiUrl);const currentMain = response.data.current;
         const hourlyMain = response.data.hourly
+        setWeatherType(response.data.current.weather_code)
         setMain(currentMain);
         setHourly(hourlyMain)
       } catch (error) {
@@ -57,19 +66,43 @@ const App = () => {
         setLoading(false);
       }
     };
+
+    const handleNotification = () => {
+      addNotification({
+        title: `It\'s ${vmo[weatherType].day.description} in\'nit`,
+        message: `Weather is ${vmo[weatherType].day.description}, bring a D*mn Umbrella`,
+        duration: 10000,
+        icon: Rain,
+        native: true
+      })
+      setNotificationFired(true);
+ 
+    }
+    if (!notificationFired && weatherType > 60) {
+      handleNotification();
+    }
+
   const handleSearch = () => {
     setSearch(search)
     fetchLocation(search)
     fetchWeather();
   };
-
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       handleSearch(search)
     }, 1500);
     return () => clearTimeout(timer);
     
+    
+
   }, [search]);
+
+  useEffect(() => {
+    const intervalId = setInterval(fetchWeather, 60000);
+    fetchWeather();
+    return () => clearInterval(intervalId);
+  }, []);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -96,6 +129,8 @@ const App = () => {
                 <h1>{location.name}</h1>
                 <img className="locaion-icon" src={LocationIcon} alt="location-icon" height="15px" width="15px"/>
                 <p className='temperature'>{main.temperature_2m}°C</p>
+                <p>{vmo[weatherType].day.description}</p>
+                <button onClick={()=>{handleNotification()}}>hey</button>
               </>
               ) : (
                 <h1>No result</h1>

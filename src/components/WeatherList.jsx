@@ -6,7 +6,7 @@ const WeatherList = ({hourly, location}) => {
     <>
         <div className='card-container'>
             {hourly.time.map((time, index) => (
-                <Weathercard location={location} temperature={hourly.temperature_2m[index]} time={time}/>
+                <Weathercard key={index} location={location} temperature={hourly.temperature_2m[index]} time={time}/>
             ))}
         </div>
     </>
